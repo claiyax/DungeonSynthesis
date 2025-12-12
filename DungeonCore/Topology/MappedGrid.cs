@@ -5,17 +5,17 @@ public class MappedGrid<TBase> where TBase : notnull
     private readonly Dictionary<TBase, int> _base2Id = new();
     private readonly Dictionary<int, TBase> _id2Base = new();
 
-    public TBase[] Base { get; }
+    private TBase[] BaseGrid { get; }
     public int Width { get; }
     public int Height { get; }
 
-    public MappedGrid(TBase[] data, int width, int height, TBase unknownValue)
+    public MappedGrid(TBase[] grid, int width, int height, TBase unknownValue)
     {
-        Base = data;
+        BaseGrid = grid;
         Width = width;
         Height = height;
         var id = 0;
-        foreach (var cell in Base)
+        foreach (var cell in BaseGrid)
         {
             if (!_base2Id.TryAdd(cell, id)) continue;
             _id2Base.Add(id, cell);
@@ -39,10 +39,7 @@ public class MappedGrid<TBase> where TBase : notnull
         return newGrid;
     }
 
-    public int[] ToTileIds()
-    {
-        return ToTileIds(Base, Width, Height);
-    }
+    public int[] ToTileIds() => ToTileIds(BaseGrid, Width, Height);
 
     public TBase[] ToBase(int[] data, int width, int height)
     {

@@ -22,21 +22,21 @@ public static class Helpers
         return sb.ToString();
     }
 
-    public static (char[] data, int width, int height) StringToCharGrid(string grid, char fillChar = ' ')
+    public static (char[] grid, int width, int height) StringToCharGrid(string str, char fill = ' ')
     {
-        var rows = grid.Split('\n');
+        var rows = str.Split('\n');
         var height = rows.Length;
         var width = rows.Max(s => s.Length);
-        var data = new char[width * height];
+        var grid = new char[width * height];
         for (var y = 0; y < height; y++)
         {
             for (var x = 0; x < width; x++)
             {
                 var row = rows[y];
-                data[y * width + x] = x < row.Length ? row[x] : fillChar;
+                grid[y * width + x] = x < row.Length ? row[x] : fill;
             }
         }
-        return (data, width, height);
+        return (grid, width, height);
     }
 
     // --------------- Square matrix transforms on flat arrays (Dihedral D4) ---------------

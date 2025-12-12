@@ -25,7 +25,7 @@ var seed = Random.Shared.Next();
 // seed = 1724546381;
 var tm = new TileMapGenerator<char>(mg, model, 
     new MinEntropyHeuristic(), 
-    new Ac4Propagator(),
+    new Ac2001Propagator(),
     ow, oh, seed);
 
 var sw = new Stopwatch();
