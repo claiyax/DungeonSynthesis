@@ -32,9 +32,13 @@ public class TileMapGenerator<TBase> (
     {
         var cellId = heuristic.PickNextCell(_grid);
         if (cellId == -1) return PropagationResult.Collapsed;
-        return propagator.Collapse(_grid, model, cellId) 
+        var result = propagator.Collapse(_grid, model, cellId) 
             ? PropagationResult.Collapsing 
             : PropagationResult.Contradicted;
+        Console.SetCursorPosition(0, 0);
+        Console.WriteLine(Helpers.GridToString(ToBase(), outWidth, outHeight));
+        // Thread.Sleep(50);
+        return result;
     }
 
     public PropagationResult Generate()

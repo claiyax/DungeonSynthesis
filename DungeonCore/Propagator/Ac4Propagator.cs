@@ -9,6 +9,7 @@ public sealed class Ac4Propagator : IPropagator
 {
     // Layout: Cell -> State -> Direction
     // [Cell * (StateCount * 4) + State * 4 + Direction]
+    // Stores the number of supports per state per direction
     private int[] _supports = []; 
     private int _stateCount;
     private int _stateDirCount;
@@ -20,8 +21,8 @@ public sealed class Ac4Propagator : IPropagator
 
     public void Initialize(WaveGrid grid, IModel model)
     {
-        _stateCount = model.StateCount;
         const int dirCount = 4;
+        _stateCount = model.StateCount;
         _stateDirCount = _stateCount * dirCount;
         _supports = new int[grid.CellCount * _stateDirCount];
         
@@ -31,10 +32,11 @@ public sealed class Ac4Propagator : IPropagator
             foreach (var (neighborId, dir) in grid.NeighborsOf(cellId))
             {
                 var neighbor = grid.Cells[neighborId];
-                foreach (var s in cell.GetPossibleStates())
+                for (var s = 0; s < model.StateCount; s++)
                 {
+                    if (!cell.Domain[s]) continue;
                     var compatibles = model.GetNeighbors(s, dir);
-                    var count = compatibles.Count(t => neighbor.IsPossibleState(t));
+                    var count = compatibles.Count(t => neighbor.Domain[t]);
                     _supports[GetSupportIndex(cellId, s, dir)] = count;
                 }
             }
@@ -53,8 +55,9 @@ public sealed class Ac4Propagator : IPropagator
         _removalQueue.Clear();
         
         // Enqueue eliminations
-        foreach (var state in cell.GetPossibleStates())
+        for (var state = 0; state < model.StateCount; state++)
         {
+            if (!cell.Domain[state]) continue;
             if (state == chosenState) continue;
             _removalQueue.Enqueue((cellId, state));
         }
@@ -81,7 +84,7 @@ public sealed class Ac4Propagator : IPropagator
                 foreach (var state in supportedStates)
                 {
                     // Optimization: Do not process if neighbor is already banned this state.
-                    if (!nCell.IsPossibleState(state)) continue;
+                    if (!nCell.Domain[state]) continue;
                     
                     var supportIdx = GetSupportIndex(neighborId, state, oppositeDir);
                     supports[supportIdx]--;

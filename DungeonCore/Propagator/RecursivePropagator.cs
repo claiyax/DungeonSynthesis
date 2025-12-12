@@ -24,11 +24,12 @@ public class RecursivePropagator(int maxDepth = int.MaxValue) : IPropagator
             var nCell = grid.Cells[neighborId];
             var oppositeDir = Direction.Invert(dir);
 
-            foreach (var nState in nCell.GetPossibleStates())
+            for (var nState = 0; nState < model.StateCount; nState++)
             {
+                if (!nCell.Domain[nState]) continue;
                 var isCompatible = model
                     .GetNeighbors(nState, oppositeDir)
-                    .Any(support => cell.IsPossibleState(support));
+                    .Any(support => cell.Domain[support]);
 
                 if (isCompatible) continue;
                 var weight = model.GetWeight(nState);

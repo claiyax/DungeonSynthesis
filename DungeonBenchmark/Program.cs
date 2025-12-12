@@ -1,4 +1,5 @@
-﻿using DungeonCore;
+﻿using System.Diagnostics;
+using DungeonCore;
 using DungeonCore.Heuristic;
 using DungeonCore.Shared;
 using DungeonCore.Topology;
@@ -17,15 +18,21 @@ var s =
     """;
 var (charData, width, height) = Helpers.StringToCharGrid(s);
 var mg = new MappedGrid<char>(charData, width, height,'?');
-var model = new OverlappingModel(3, true);
-var oh = 29;
-var ow = 69;
+var model = new OverlappingModel(3, true, false);
+const int oh = 28;
+const int ow = 100;
 var seed = Random.Shared.Next();
-Console.Write($"Seed: {seed} -> ");
+// seed = 1724546381;
 var tm = new TileMapGenerator<char>(mg, model, 
     new MinEntropyHeuristic(), 
-    new Ac4Propagator(),
+    new Ac2001Propagator(),
     ow, oh, seed);
-    tm.Initialize();
-    Console.WriteLine(tm.Generate());
-    Console.WriteLine(Helpers.GridToString(tm.ToBase(), ow, oh));
+
+var sw = new Stopwatch();
+sw.Start();
+tm.Initialize();
+var result = tm.Generate();
+Console.SetCursorPosition(0, 0);
+Console.WriteLine(Helpers.GridToString(tm.ToBase(), ow, oh));
+sw.Stop();
+Console.WriteLine($"Seed: {seed} | Domain: {model.StateCount} | {result} (took {sw.ElapsedMilliseconds}ms)");

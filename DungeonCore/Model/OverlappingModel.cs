@@ -89,8 +89,9 @@ public class OverlappingModel(int n, bool periodic = true, bool symmetrical = fa
     public int PickState(WaveCell cell)
     {
         var r = _random.NextDouble() * cell.SumWeights;
-        foreach (var state in cell.GetPossibleStates())
+        for (var state = 0; state < StateCount; state++)
         {
+            if (!cell.Domain[state]) continue;
             r -= States[state].Weight;
             if (r < 0) return state;
         }
