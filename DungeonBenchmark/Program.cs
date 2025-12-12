@@ -10,7 +10,7 @@ var s =
                 
      ┌─────┐     
      │     └──┐ 
-     │        │ 
+     │  WFC   │ 
      └──┐     │ 
         └─────┘ 
                 
@@ -23,7 +23,7 @@ var ow = 50;
 var tm = new TileMapGenerator<char>(mg, model, 
     new ScanlineHeuristic(), 
     new Ac3Propagator(),
-    ow, oh, 1);
+    ow, oh);
     tm.Initialize();
     Console.WriteLine(tm.Generate());
     Console.WriteLine(Helpers.GridToString(tm.ToBase(), ow, oh));

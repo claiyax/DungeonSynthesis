@@ -17,8 +17,4 @@ public sealed class ScanlineHeuristic : IHeuristic
             return _idx - 1;
         }
     }
-
-    public void OnDomainReduced(int cellId, int removedState) { /* no-op */ }
-    
-    public void OnObserved(int cellId, int chosenState) { /* no-op */ }
 }

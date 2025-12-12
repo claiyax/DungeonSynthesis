@@ -9,7 +9,7 @@ public class WaveGrid
     public int CellCount { get; }
     public WaveCell[] Cells { get; }
 
-    public event Action<int, int>? DomainReduced; // (cellId, removedState)
+    public event Action<int, int>? Banned; // (cellId, removedState)
     public event Action<int, int>? Observed;      // (cellId, chosenState)
 
     public WaveGrid(int width, int height)
@@ -54,7 +54,7 @@ public class WaveGrid
     {
         var cell = Cells[cellId];
         var changed = cell.Ban(state);
-        if (changed) DomainReduced?.Invoke(cellId, state);
+        if (changed) Banned?.Invoke(cellId, state);
         return changed;
     }
 }
