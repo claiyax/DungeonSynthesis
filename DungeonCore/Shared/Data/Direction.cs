@@ -1,4 +1,4 @@
-namespace DungeonCore.Shared;
+namespace DungeonCore.Shared.Data;
 
 internal static class Direction
 {

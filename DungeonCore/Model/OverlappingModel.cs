@@ -1,5 +1,5 @@
 using System.Text;
-using DungeonCore.Shared;
+using DungeonCore.Shared.Util;
 using DungeonCore.Topology;
 
 namespace DungeonCore.Model;
@@ -7,6 +7,7 @@ namespace DungeonCore.Model;
 public class OverlappingModel(int n, bool periodic = true, bool symmetrical = false) : IModel
 {
     private Random _random = new();
+    private bool _initialized;
     
     private List<CellState> States { get; } = new();
     public int StateCount { get; private set; }
@@ -68,11 +69,9 @@ public class OverlappingModel(int n, bool periodic = true, bool symmetrical = fa
         }
 
         // Add all states
-        foreach (var cell in map.Select(kv => kv.Value))
-        {
-            SumWeights += cell.Weight;
-            States.Add(cell);
-        }
+        States.Clear();
+        foreach (var cell in map.Select(kv => kv.Value)) States.Add(cell);
+        SumWeights = States.Sum(s => s.Weight);
         StateCount = States.Count;
 
         // Build adjacency map
@@ -84,10 +83,13 @@ public class OverlappingModel(int n, bool periodic = true, bool symmetrical = fa
                 t0.TryAddNeighbor(idx++, t1);
             }
         }
+
+        _initialized = true;
     }
     
     public int PickState(WaveCell cell)
     {
+        if (!_initialized) return -1;
         var r = _random.NextDouble() * cell.SumWeights;
         for (var state = 0; state < StateCount; state++)
         {

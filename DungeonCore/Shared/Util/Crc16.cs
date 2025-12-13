@@ -1,4 +1,4 @@
-namespace DungeonCore.Shared;
+namespace DungeonCore.Shared.Util;
 
 internal static class Crc16 {
     private const ushort Polynomial = 0xA001;

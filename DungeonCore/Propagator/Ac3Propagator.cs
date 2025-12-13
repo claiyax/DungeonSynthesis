@@ -1,5 +1,5 @@
 using DungeonCore.Model;
-using DungeonCore.Shared;
+using DungeonCore.Shared.Data;
 using DungeonCore.Topology;
 
 namespace DungeonCore.Propagator;

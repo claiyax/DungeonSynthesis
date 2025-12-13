@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using DungeonCore.Shared;
+using DungeonCore.Shared.Data;
 
 namespace DungeonCore.Topology;
 
@@ -25,6 +25,8 @@ public class WaveGrid
     {
         for (var i = 0; i < CellCount; i++)
             Cells[i] = new WaveCell(stateCount, sumWeights);
+        Banned = null;
+        Observed = null;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

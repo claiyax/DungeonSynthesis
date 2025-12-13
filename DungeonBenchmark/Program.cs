@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using DungeonCore;
 using DungeonCore.Heuristic;
-using DungeonCore.Shared;
 using DungeonCore.Topology;
 using DungeonCore.Model;
 using DungeonCore.Propagator;
+using DungeonCore.Shared.Data;
+using DungeonCore.Shared.Util;
 
 var s =
     """
@@ -26,22 +27,21 @@ TileMapGenerator<char>? tm = null;
 int seed = 0;
 int runs = 0;
 PropagationResult result = PropagationResult.Contradicted;
-while (result == PropagationResult.Contradicted || runs < 10)
+while (result == PropagationResult.Contradicted || runs < 100)
 {
     GC.Collect();
     seed = Random.Shared.Next();
     // seed = 1190156738;
     tm = new TileMapGenerator<char>(mg,
-        new OverlappingModel(3),
+        new OverlappingModel(2),
         new OptimizedEntropyHeuristic(), 
         new Ac4Propagator(),
         ow, oh, seed);
     sw.Reset();
     sw.Start();
-    tm.Initialize();
     result = tm.Generate();
     sw.Stop();
     runs++;
+    Console.WriteLine(tm);
+    Console.WriteLine($"Runs: {runs} | Seed: {seed} | {result} (took {sw.ElapsedMilliseconds}ms)");
 }
-Console.WriteLine(tm);
-Console.WriteLine($"Runs: {runs} | Seed: {seed} | {result} (took {sw.ElapsedMilliseconds}ms)");

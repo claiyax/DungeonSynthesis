@@ -1,7 +1,8 @@
 using DungeonCore.Heuristic;
 using DungeonCore.Model;
 using DungeonCore.Propagator;
-using DungeonCore.Shared;
+using DungeonCore.Shared.Data;
+using DungeonCore.Shared.Util;
 using DungeonCore.Topology;
 
 namespace DungeonCore;
@@ -17,6 +18,7 @@ public class TileMapGenerator<TBase> (
 {
     private readonly Random _random = new(seed);
     private readonly WaveGrid _grid = new(outWidth, outHeight);
+    private bool _initialized;
     
     public void Initialize()
     {
@@ -26,19 +28,30 @@ public class TileMapGenerator<TBase> (
         heuristic.Initialize(_grid, model, _random);
         _grid.Banned += heuristic.OnBanned;
         _grid.Observed += heuristic.OnObserved;
+        _initialized = true;
     }
     
     public PropagationResult Step()
     {
+        if (!_initialized) Initialize();
+        
         var cellId = heuristic.PickNextCell(_grid);
-        if (cellId == -1) return PropagationResult.Collapsed;
-        return propagator.Collapse(_grid, model, cellId) 
-            ? PropagationResult.Collapsing 
-            : PropagationResult.Contradicted;
+        if (cellId == -1)
+        {
+            _initialized = false;
+            return PropagationResult.Collapsed;
+        }
+        
+        if (propagator.Collapse(_grid, model, cellId))
+            return PropagationResult.Collapsing;
+        
+        _initialized = false;
+        return PropagationResult.Contradicted;
     }
 
     public PropagationResult Generate(bool logProgress = false)
     {
+        Initialize();
         while (true)
         {
             var result = Step();

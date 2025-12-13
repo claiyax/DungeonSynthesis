@@ -8,7 +8,7 @@ public sealed class MinEntropyHeuristic : IHeuristic
     private Random _random = new();
     private double[] _stateWlw = []; // Precomputed (Weight * Log(Weight)) for each state ID
     private double[] _cellWlwSums = []; // The shadow array tracking Sum(Wlw) per cell
-    private bool _initialized; 
+    private bool _initialized;
 
     public void Initialize(WaveGrid grid, IModel model, Random random)
     {

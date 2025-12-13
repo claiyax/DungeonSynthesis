@@ -1,4 +1,5 @@
-using DungeonCore.Shared;
+using DungeonCore.Shared.Data;
+using DungeonCore.Shared.Util;
 using DungeonCore.Topology;
 
 namespace DungeonCore.Model;

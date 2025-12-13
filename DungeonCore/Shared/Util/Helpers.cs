@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace DungeonCore.Shared;
+namespace DungeonCore.Shared.Util;
 
 public static class Helpers
 {
