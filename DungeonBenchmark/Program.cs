@@ -23,25 +23,22 @@ var mg = new MappedGrid<char>(charData, width, height,'?');
 const int oh = 28;
 const int ow = 100;
 var sw = new Stopwatch();
-TileMapGenerator<char>? tm = null;
-int seed = 0;
-int runs = 0;
-PropagationResult result = PropagationResult.Contradicted;
+var runs = 0;
+var result = PropagationResult.Contradicted;
 while (result == PropagationResult.Contradicted || runs < 100)
 {
     GC.Collect();
-    seed = Random.Shared.Next();
+    var seed = Random.Shared.Next();
     // seed = 1190156738;
-    tm = new TileMapGenerator<char>(mg,
-        new OverlappingModel(2),
+    var tm = new TileMapGenerator<char>(mg,
+        new OverlappingModel(3),
         new OptimizedEntropyHeuristic(), 
         new Ac4Propagator(),
         ow, oh, seed);
     sw.Reset();
     sw.Start();
-    result = tm.Generate();
+    result = tm.Generate(true);
     sw.Stop();
     runs++;
-    Console.WriteLine(tm);
     Console.WriteLine($"Runs: {runs} | Seed: {seed} | {result} (took {sw.ElapsedMilliseconds}ms)");
 }
