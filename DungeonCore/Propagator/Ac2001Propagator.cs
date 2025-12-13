@@ -33,9 +33,11 @@ public sealed class Ac2001Propagator : IPropagator
         if (!_initialized) Initialize(grid, model);
         
         var cell = grid.Cells[cellId];
-        var chosenState = model.PickState(cell);
-        if (chosenState == -1 || !grid.Observe(cellId, chosenState)) return false;
+        var state = model.PickState(cell);
+        // Contradiction = state is invalid, or cell can't be observed
+        if (state == -1 || !grid.Observe(cellId, state)) return false;
         
+        // Push the first changed cell and propagate from there
         _dirtyStack.Clear();
         _dirtyStack.Push(cellId);
         return Propagate(grid, model);
@@ -48,8 +50,8 @@ public sealed class Ac2001Propagator : IPropagator
         {
             var currentCellId = _dirtyStack.Pop();
             var currentCell = grid.Cells[currentCellId];
-
-            // Notify all neighbors that 'currentCell' has changed.
+            
+            // Check every neighbor of the "dirty" cell
             foreach (var (neighborId, dir) in grid.NeighborsOf(currentCellId))
             {
                 var nCell = grid.Cells[neighborId];
@@ -58,25 +60,20 @@ public sealed class Ac2001Propagator : IPropagator
                 var neighborChanged = false;
                 var oppositeDir = Direction.Invert(dir);
 
-                // Check every state that is CURRENTLY valid in the neighbor.
+                // Check every state that is currently valid in the neighbor
                 for (var nState = 0; nState < model.StateCount; nState++)
                 {
                     if (!nCell.Domain[nState]) continue;
-                    // 1. Get the list of states that 'nState' ALLOWS in 'currentCell'
-                    // (i.e. "If I am nState, what can be inside currentCell?")
+                    
+                    // Get the pointer to where we last found support
                     var candidates = model.GetNeighbors(nState, oppositeDir);
-
-                    // 2. Get the pointer to where we last found support
-                    // Note: We index based on the NEIGHBOR because we are tracking the support FOR the neighbor state.
-                    // Pointer Index = NeighborCell -> NeighborState -> DirectionToCurrent
                     var pointerIdx = GetPointerIndex(neighborId, nState, oppositeDir);
                     var resumeIndex = lastSupport[pointerIdx];
-
-                    // 3. AC-2001 Search
-                    // Resume searching from 'resumeIndex'. We do NOT restart at 0.
+                    
+                    // Resume searching from resumeIndex
+                    // (not from 0, unlike AC-3)
                     var foundSupport = false;
                     var count = candidates.Count;
-                    
                     for (var k = resumeIndex; k < count; k++)
                     {
                         var candidateState = candidates[k];
@@ -88,17 +85,18 @@ public sealed class Ac2001Propagator : IPropagator
                         break;
                     }
 
-                    // 4. If we ran off the end of the list, no support exists. Ban it.
+                    // If we ran off the end of the list, no support exists (ban it)
+                    // Flag as skipped (lastSupport = count makes it unreachable)
                     if (foundSupport) continue;
-                    // Optimization: set pointer to end to avoid re-scanning fully on next pass
-                    lastSupport[pointerIdx] = count; 
-                        
+                    lastSupport[pointerIdx] = count;
                     var weight = model.GetWeight(nState);
                     if (!grid.Ban(neighborId, nState, weight)) continue;
-                    if (nCell.DomainCount == 0) return false;
+                    // Check for contradiction here (this is where it can happen)
+                    if (nCell.DomainCount < 1) return false;
                     neighborChanged = true;
                 }
 
+                // If there was a ban, mark the neighbor as "dirty"                
                 if (!neighborChanged) continue;
                 _dirtyStack.Push(neighborId);
             }

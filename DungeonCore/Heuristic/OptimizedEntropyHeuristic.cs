@@ -131,11 +131,8 @@ public sealed class OptimizedEntropyHeuristic : IHeuristic
         if (!_initialized) return -1;
 
         // If a cell has a domain count of 1, pick it right away
-        if (_buckets[1].Count > 0)
-        {
-            return _buckets[1][0];
-        }
-
+        if (_buckets[1].Count > 0) return _buckets[1][0];
+        
         // Find the lowest entropy in buckets 2+
         for (var k = 2; k < _buckets.Length; k++)
         {
@@ -150,7 +147,8 @@ public sealed class OptimizedEntropyHeuristic : IHeuristic
                     return PickFromCandidates(candidates.AsReadOnly(), grid);
             }
         }
-
+        
+        // There are no more cells to collapse
         return -1;
     }
 

@@ -26,12 +26,15 @@ public sealed class Ac4Propagator : IPropagator
         _stateDirCount = _stateCount * dirCount;
         _supports = new int[grid.CellCount * _stateDirCount];
         
+        // Track every cell such...
         for (var cellId = 0; cellId < grid.CellCount; cellId++)
         {
             var cell = grid.Cells[cellId];
+            // ...that we go through all its neighbors in 4 directions...
             foreach (var (neighborId, dir) in grid.NeighborsOf(cellId))
             {
                 var neighbor = grid.Cells[neighborId];
+                // ...and count compatible states (support count)
                 for (var s = 0; s < model.StateCount; s++)
                 {
                     if (!cell.Domain[s]) continue;
@@ -50,18 +53,21 @@ public sealed class Ac4Propagator : IPropagator
         if (!_initialized) Initialize(grid, model);
 
         var cell = grid.Cells[cellId];
-        var chosenState = model.PickState(cell);
-        if (chosenState == -1) return false;
+        var state = model.PickState(cell);
+        if (state == -1) return false;
         
         _removalQueue.Clear();
-        for (var state = 0; state < model.StateCount; state++)
+        // Add all invalid states (all except the observed state)
+        // to the removal queue for the selected cell to collapse
+        for (var s = 0; s < model.StateCount; s++)
         {
-            if (!cell.Domain[state]) continue;
-            if (state == chosenState) continue;
-            _removalQueue.Enqueue((cellId, state));
+            if (!cell.Domain[s]) continue;
+            if (s == state) continue;
+            _removalQueue.Enqueue((cellId, s));
         }
         
-        return grid.Observe(cellId, chosenState) && Propagate(grid, model);
+        // We check observation here, then propagate
+        return grid.Observe(cellId, state) && Propagate(grid, model);
     }
 
     private bool Propagate(WaveGrid grid, IModel model)
@@ -72,6 +78,7 @@ public sealed class Ac4Propagator : IPropagator
         while (_removalQueue.Count > 0)
         {
             var (removedCellId, removedState) = _removalQueue.Dequeue();
+            // Check every neighbor of the changed cell
             foreach (var (neighborId, dir) in grid.NeighborsOf(removedCellId))
             {
                 // Get the list of states in the neighbor that were supported by 'removedState'
@@ -79,18 +86,21 @@ public sealed class Ac4Propagator : IPropagator
                 var oppositeDir = Direction.Invert(dir);
                 var nCell = grid.Cells[neighborId];
                 
+                // Check all supported states that are still true
                 foreach (var state in supportedStates)
                 {
-                    // Optimization: Do not process if neighbor is already banned this state.
                     if (!nCell.Domain[state]) continue;
                     
+                    // Reduce support count that neighbor cell
                     var supportIdx = GetSupportIndex(neighborId, state, oppositeDir);
                     supports[supportIdx]--;
 
                     if (supports[supportIdx] != 0) continue;
+                    // No support = invalid state. Ban it.
                     if (!grid.Ban(neighborId, state, model.GetWeight(state))) continue;
+                    // Check for contradiction here (this is where it can happen)
                     if (nCell.DomainCount == 0) return false;
-                    
+                    // State was removed, enqueue the removal for this neighbor
                     _removalQueue.Enqueue((neighborId, state));
                 }
             }
