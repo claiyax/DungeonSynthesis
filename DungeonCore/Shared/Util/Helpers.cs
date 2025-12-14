@@ -24,18 +24,25 @@ public static class Helpers
 
     public static (char[] grid, int width, int height) StringToCharGrid(string str, char fill = ' ')
     {
-        var rows = str.Split('\n');
-        var height = rows.Length;
-        var width = rows.Max(s => s.Length);
+        var lines = new List<string>();
+        using (var reader = new StringReader(str))
+        {
+            while (reader.ReadLine() is { } line)
+                lines.Add(line);
+        }
+        if (lines.Count == 0) return ([], 0, 0);
+
+        var height = lines.Count;
+        var width = lines.Max(s => s.Length);
         var grid = new char[width * height];
+    
         for (var y = 0; y < height; y++)
         {
+            var row = lines[y];
             for (var x = 0; x < width; x++)
-            {
-                var row = rows[y];
                 grid[y * width + x] = x < row.Length ? row[x] : fill;
-            }
         }
+
         return (grid, width, height);
     }
 
