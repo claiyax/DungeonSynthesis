@@ -28,7 +28,7 @@ const string skyline =
     ################
     ################
     """;
-var (grid, width, height) = Helpers.StringToCharGrid(skyline);
+var (grid, width, height) = Helpers.StringToCharGrid(wfc);
 var mg = new MappedGrid<char>(grid, width, height,'?');
 
 const int oh = 28;
@@ -41,7 +41,7 @@ while (result == PropagationResult.Contradicted || runs < 10)
     GC.Collect();
     var seed = Random.Shared.Next();
     var tm = new TileMapGenerator<char>(mg,
-        new OverlappingModel(3, false),
+        new OverlappingModel(2),
         new OptimizedEntropyHeuristic(), 
         new Ac4Propagator(),
         ow, oh, seed);
